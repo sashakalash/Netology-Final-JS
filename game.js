@@ -148,21 +148,23 @@ class Level {
   
 
 
-const dictionary = {
-	'x': new Vector(),
-	'!': new Vector(),
-	'@': new Actor(),
-	'o': new Actor(),
-	'=': new Actor(),
-	'|': new Actor(),
-	'v': new Actor()
-};
+// const dictionary = {
+// 	'x': new Vector(),
+// 	'!': new Vector(),
+// 	'@': new Actor(),
+// 	'o': new Actor(),
+// 	'=': new Actor(),
+// 	'|': new Actor(),
+// 	'v': new Actor()
+// };
 class LevelParser {
 	constructor(dictionary) {
 		this.dictionary = dictionary;
 	}
 	actorFromSymbol(symb) {
-		return this.dictionary[symb];
+		if(symb !== undefined) {
+			return this.dictionary[symb];
+		}
 	}
 	obstacleFromSymbol(symb) {
 		switch(symb) {
@@ -171,39 +173,54 @@ class LevelParser {
 			case '!':
 				return 'lava';
 			default: 
-				return undefined;
+			break;	
 		}
 	}
 	createGrid(stringsArr) {
-		let finalArr = [];
-		stringsArr.map(el => Array.from(el)) //преобразуем строки массивы в отдельные массивы
-			.forEach(el => 
-				el.map(newEl => 
-					finalArr.push(new Array(this.obstacleFromSymbol(newEl))))); 
-					//разбив массив до элементов, получаем конструктор из каждого символа и составляем 
-					//из этих констуркторов новый массив
-		return finalArr;
+		let newStringsArr = stringsArr.map(el => Array.from(el)); 
+		return newStringsArr.map(el => 
+			el.map(newEl => 
+				this.obstacleFromSymbol(newEl)));
 	}
 	createActors(stringsArr) {
 		let finalArr = [];
-		stringsArr.forEach((elY, indexY) => 
-			Array.from(elY).forEach((elX, indexX) => {
-				if(this.dictionary[elX] === Actor) { 
-				//аналогично разбиваем массив, проверяем является ли эл-т искомым констурктором
-					let act = this.actorFromSymbol(elX);
-					finalArr.push(new act(new Vector(indexX, indexY))); 
-					//составляем конечный массив из конструкторов, используя координаты элемента 
-					//в качестве аргументов к методу Vector
+		stringsArr.forEach((elY, indexY) => {
+			let newFinalArr = Array.from(elY);
+			newFinalArr.forEach((elX, indexX) => {
+			
+				if(this.dictionary[elX] instanceof Actor) { 
+					let vector = new Vector(indexX, indexY);
+					let actor = this.actorFromSymbol(elX);					
+					 finalArr.push(new actor(vector));
+					
 				} 
-			})
-		);	
+
+			});
+		});	
 		return finalArr;	
 	}
+	
 	parse(stringsArr) {
 		return new Level(this.createGrid(stringsArr), this.createActors(stringsArr));
 	}
 }
 
+const plan = [
+  ' @ = v',
+  'x!x'
+];
+
+const actorsDict = Object.create(null);
+actorsDict['@'] = Actor;
+
+const parser = new LevelParser(actorsDict);
+const level = parser.parse(plan);
+
+level.grid.forEach((line, y) => {
+  line.forEach((cell, x) => console.log(`(${x}:${y}) ${cell}`));
+});
+
+level.actors.forEach(actor => console.log(`(${actor.pos.x}:${actor.pos.y}) ${actor.type}`));
 class Fireball extends Actor {
 	constructor(pos, speed) {
 		super(pos, new Vector (1, 1), speed);
