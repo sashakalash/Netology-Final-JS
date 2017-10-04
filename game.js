@@ -184,29 +184,40 @@ class LevelParser {
 	}
 	createActors(stringsArr) {
 		let finalArr = [];
+		if(this.dictionary === undefined) {
+			return finalArr;
+		}
 		stringsArr.forEach((elY, indexY) => {
 			let newFinalArr = Array.from(elY);
 			newFinalArr.forEach((elX, indexX) => {
+			let vector = new Vector(indexX, indexY);
 			
-				if(this.dictionary[elX] instanceof Actor) { 
-					let vector = new Vector(indexX, indexY);
-					let actor = this.actorFromSymbol(elX);					
-					 finalArr.push(new actor(vector));
+				let actor = this.actorFromSymbol(elX);	
+
+				if(actor !== undefined) {
+			// console.log(this.actorFromSymbol(elX));
+			let x = new actor(vector);
+			if(x instanceof Actor) { 
+								
+					 finalArr.push(x);
 					
 				} 
+			}
+			
 
 			});
 		});	
+		console.log(finalArr);
 		return finalArr;	
 	}
-	
+
 	parse(stringsArr) {
 		return new Level(this.createGrid(stringsArr), this.createActors(stringsArr));
 	}
 }
 
 const plan = [
-  ' @ = v',
+  ' @ ',
   'x!x'
 ];
 
