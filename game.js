@@ -107,8 +107,6 @@ class Level {
 			for(let y = top; y < bottom; y++) {
 				if(this.grid[x][y] !== undefined) {
 					return this.grid[x][y];
-				} else {
-					return undefined;
 				}
 			}
 		}
@@ -124,39 +122,20 @@ class Level {
 		return this.actors.find(el => el.type === typeObj) === undefined;
 	}
 	playerTouched(typeObj, actor = new Actor()) {
-		if(this.status !== null) {
-			return;
-		}
-		if(typeObj === 'lava' || typeObj === 'fireball') {
-			this.status = 'lost';
-		}
-		if(typeObj === 'coin' && actor.type === 'coin') {
-			this.removeActor(actor);
-			if(this.noMoreActors(typeObj)) {
-				this.status = 'won';
+		if(this.status === null) {
+			if(typeObj === 'lava' || typeObj === 'fireball') {
+				this.status = 'lost';
+			}	
+			if(typeObj === 'coin' && actor.type === 'coin') {
+				this.removeActor(actor);
+				if(this.noMoreActors(typeObj)) {
+					this.status = 'won';
+				}
 			}
 		}
 	}
 }
 
-  // const grid = [
-  //   new Array(3),
-  //   ['wall', 'wall', 'lava']
-  // ];
-  // const level = new Level(grid);
-  // runLevel(level, DOMDisplay);
-  
-
-
-// const dictionary = {
-// 	'x': new Vector(),
-// 	'!': new Vector(),
-// 	'@': new Actor(),
-// 	'o': new Actor(),
-// 	'=': new Actor(),
-// 	'|': new Actor(),
-// 	'v': new Actor()
-// };
 class LevelParser {
 	constructor(dictionary) {
 		this.dictionary = dictionary;
@@ -187,27 +166,19 @@ class LevelParser {
 		if(this.dictionary === undefined) {
 			return finalArr;
 		}
-		stringsArr.forEach((elY, indexY) => {
-			let newFinalArr = Array.from(elY);
-			newFinalArr.forEach((elX, indexX) => {
-			let vector = new Vector(indexX, indexY);
-			
-				let actor = this.actorFromSymbol(elX);	
-
-				if(actor !== undefined) {
-			// console.log(this.actorFromSymbol(elX));
-			let x = new actor(vector);
-			if(x instanceof Actor) { 
-								
-					 finalArr.push(x);
-					
-				} 
+		for (let y = 0; y < stringsArr.length; y++) {
+			for (let x = 0; x < stringsArr[y].length; x++) {
+				let symb = stringsArr[y][x]; //c помощью полученных координат получаем символ 
+				let vector = new Vector(x, y); //используем координаты для создания вектора
+				let actor = this.actorFromSymbol(symb);	//получаем данные из словаря по символу
+				if(actor !== undefined && typeof actor === 'function') { // если функция для данного символа в словаре существуют 
+					let movObj = new actor(vector); //получаем с помощью констурктора объект
+					if(movObj instanceof Actor) { //проверяем, что это экземпляр Actor
+						 finalArr.push(movObj);
+					} 
+				}
 			}
-			
-
-			});
-		});	
-		console.log(finalArr);
+		}	
 		return finalArr;	
 	}
 
@@ -216,25 +187,10 @@ class LevelParser {
 	}
 }
 
-const plan = [
-  ' @ ',
-  'x!x'
-];
 
-const actorsDict = Object.create(null);
-actorsDict['@'] = Actor;
-
-const parser = new LevelParser(actorsDict);
-const level = parser.parse(plan);
-
-level.grid.forEach((line, y) => {
-  line.forEach((cell, x) => console.log(`(${x}:${y}) ${cell}`));
-});
-
-level.actors.forEach(actor => console.log(`(${actor.pos.x}:${actor.pos.y}) ${actor.type}`));
 class Fireball extends Actor {
 	constructor(pos, speed) {
-		super(pos, new Vector (1, 1), speed);
+		super(pos, new Vector(1, 1), speed);
 	}
 	get type() {
 		return 'fireball';
@@ -245,17 +201,24 @@ class Fireball extends Actor {
 	handleObstacle() {
 		this.speed = this.speed.times(-1);
 	}
-	act(time, grid) {
+	act(time, level) {
+		// console.log(this)
 		let nextPos = this.getNextPosition(time);
-		let event = this.obstacleAt(nextPos, this.size);
+		// console.log(this.speed.x, this.pos.x);
+		// console.log(nextPos);
+		let event = level.obstacleAt(nextPos, this.size);
+		// console.log(event);
 		if(event === undefined) {
 			this.pos.x = nextPos.x;
 			this.pos.y = nextPos.y;
 		}
-		this.playerTouched(event, this);
+		this.handleObstacle();
 	}
 }
 
+// const x = new Fireball(new Vector(1, 1), new Vector(1, 1));
+// const l = new Level([[,,,,,,], [,,,1], [1,,,,,,], [1,,,,,,,]]);
+// const y = x.act(1, l);
 
 class HorizontalFireball extends Fireball {
 	constructor(pos) {
@@ -332,6 +295,8 @@ class Player extends Actor {
 		return 'player';
 	}
 }
+
+
 
 
 
