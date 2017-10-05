@@ -202,22 +202,28 @@ class Fireball extends Actor {
 		this.speed = this.speed.times(-1);
 	}
 	act(time, level) {
-		// console.log(this)
-		let nextPos = this.getNextPosition(time);
+		console.log(this)
+		const nextPos = this.getNextPosition(time);
 		// console.log(this.speed.x, this.pos.x);
 		// console.log(nextPos);
-		let event = level.obstacleAt(nextPos, this.size);
-		// console.log(event);
-		if(event === undefined) {
-			this.pos = this.getNextPosition;
+		const obstacle = level.obstacleAt(nextPos, this.size);
+		console.log(obstacle);
+		if(obstacle !== undefined) {
+			this.handleObstacle();
+			console.log(this)
 		}
-		this.handleObstacle();
+		else {
+			this.pos = nextPos;
+			console.log(this)
+		}
+
+		
 	}
 }
 
-// const x = new Fireball(new Vector(1, 1), new Vector(1, 1));
-// const l = new Level([[,,,,,,], [,,,1], [1,,,,,,], [1,,,,,,,]]);
-// const y = x.act(1, l);
+const x = new Fireball(new Vector(1, 1), new Vector(1, 1));
+const l = new Level([[,,,,,,], [,,,1], [1,,,,,,], [1,,,,,,,]]);
+const y = x.act(2, l);
 
 class HorizontalFireball extends Fireball {
 	constructor(pos) {
