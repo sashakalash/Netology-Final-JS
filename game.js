@@ -96,9 +96,10 @@ class Level {
 		if(!(toPos instanceof Vector && size instanceof Vector)) {
 			throw new Error ('Можно использовать только объект класса Vector');
 		}
+
 		let movingObj = new Actor(toPos, size);
 		let left = Math.ceil(movingObj.left);
-		let right = Math.ceil(movingObj.right);
+		let right = Math.floor(movingObj.right);
 		let top = Math.ceil(movingObj.top); 
 		let bottom = Math.ceil(movingObj.bottom);
 		if(left <= 0 || right >= this.width || top <= 0) {
@@ -106,8 +107,8 @@ class Level {
 		} else if(bottom > this.height) {
 			return 'lava';
 		}
-		for(let y = top; y < bottom; y++) {
 			for(let x = left; x < right; x++) {
+		for(let y = top; y < bottom; y++) {
 				if(this.grid[y][x]) {
 					return this.grid[y][x];
 				}
@@ -136,6 +137,9 @@ class Level {
 		}
 	}
 }
+
+const x = new Level();
+x.obstacleAt(new Vector(0.5, 0.8), new Vector(1.1, 2.45));
 
 class LevelParser {
 	constructor(dictionary) {
