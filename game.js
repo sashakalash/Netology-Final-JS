@@ -18,16 +18,20 @@ class Vector {
 
 class Actor {
 	constructor (position = new Vector(0, 0), size = new Vector(1, 1), speed = new Vector(0, 0)) {
-		if(!(position instanceof Vector && size instanceof Vector && speed instanceof Vector)) {
-			throw new Error ('Можно прибавлять к вектору только вектор типа Vector');
+		if(!(position instanceof Vector)) {
+			throw new Error ('Позицией объекта может быть только вектор типа Vector');
+		}
+		if(!(size instanceof Vector)) {
+			throw new Error ('Размером объекта может быть только вектор типа Vector');
+		}
+		if(!(speed instanceof Vector)) {
+			throw new Error ('Скоростью объекта может быть только вектор типа Vector');
 		}
 		this.pos = position;
 		this.size = size;
 		this.speed = speed;
 	}
-	act (){
-
-	}
+	act (){}
 	get type() {
 		return 'actor';
 	}
@@ -54,7 +58,6 @@ class Actor {
 		movingObj.right > this.left && 
 		movingObj.top < this.bottom &&
 		movingObj.bottom > this.top;
-
 	}
 }
 
@@ -98,7 +101,7 @@ class Level {
 		let right = Math.ceil(movingObj.right);
 		let top = Math.ceil(movingObj.top); 
 		let bottom = Math.ceil(movingObj.bottom);
-		if(left < 0 || right > this.width || top < 0) {
+		if(left <= 0 || right >= this.width || top <= 0) {
 			return 'wall';
 		} else if(bottom > this.height) {
 			return 'lava';
@@ -109,7 +112,8 @@ class Level {
 					return this.grid[y][x];
 				}
 			}
-		}		
+		}	
+		return undefined;	
 	}
 	removeActor(actor) {
 		this.actors = this.actors.filter(el => el !== actor);
@@ -257,9 +261,8 @@ class Coin extends Actor {
 	}
 	getNextPosition(time) {
 		this.updateSpring(time);
-		this.pos = this.pos.plus(this.getSpringVector());
+		this.pos = this.fixPos.plus(this.getSpringVector());
 		return this.pos;
-		
 	}
 	act(time) {
 		this.pos = this.getNextPosition(time);
