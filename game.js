@@ -98,7 +98,7 @@ class Level {
 		}
 
 		let movingObj = new Actor(toPos, size);
-		let left = Math.ceil(movingObj.left);
+		let left = Math.floor(movingObj.left);
 		let right = Math.floor(movingObj.right);
 		let top = Math.ceil(movingObj.top); 
 		let bottom = Math.ceil(movingObj.bottom);
@@ -107,7 +107,7 @@ class Level {
 		} else if(bottom > this.height) {
 			return 'lava';
 		}
-		for(let x = left-1; x <= right; x++) {
+		for(let x = left; x <= right; x++) {
 			for(let y = top; y <= bottom; y++) {
 				if(this.grid[y][x]) {
 					return this.grid[y][x];
@@ -291,7 +291,7 @@ const schemas = [
     'x    =  x',
     '       o ',
     '     !xxx',
-    '        ',
+    ' @       ',
     'xxx!     ',
     '         '
   ],
