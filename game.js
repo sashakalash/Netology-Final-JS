@@ -63,9 +63,9 @@ class Actor {
 
 
 class Level {
-	constructor (grid, actors) {
-		this.grid = grid || [];
-		this.actors = actors || [];
+	constructor (grid = [], actors = []) {
+		this.grid = grid;
+		this.actors = actors;
 		this.status = null;
 		this.finishDelay = 1;
 	}
@@ -99,16 +99,21 @@ class Level {
 
 		let movingObj = new Actor(toPos, size);
 		let left = Math.floor(movingObj.left);
-		let right = Math.floor(movingObj.right);
-		let top = Math.ceil(movingObj.top); 
+		let right = Math.ceil(movingObj.right);
+		let top = Math.floor(movingObj.top); 
 		let bottom = Math.ceil(movingObj.bottom);
-		if(left <= 0 || right >= this.width || top <= 0) {
+		// console.log(left, right, top, bottom, ' это коорд')
+		if(left < 0 || right > this.width || top < 0) {
 			return 'wall';
 		} else if(bottom > this.height) {
 			return 'lava';
 		}
-		for(let x = left; x <= right; x++) {
-			for(let y = top; y <= bottom; y++) {
+		 for(let y = top; y < bottom; y++) {
+		 	// console.log(y, ' у');
+
+			for(let x = left; x < right; x++) {
+				// console.log(x, ' это х');
+				// console.log(this.grid[y][x], ' это зис грид')
 				if(this.grid[y][x]) {
 					return this.grid[y][x];
 				}
@@ -138,8 +143,8 @@ class Level {
 	}
 }
 
-const x = new Level();
-x.obstacleAt(new Vector(0.5, 0.8), new Vector(1.1, 2.45));
+// const x = new Level([[,,,,,,,], ['x', ,,], [,,,,,], [,,], [], [], []]);
+// console.log(x.obstacleAt(new Vector(0.7, 0.7), new Vector(0.7, 0.7)));
 
 class LevelParser {
 	constructor(dictionary) {
@@ -233,10 +238,10 @@ class FireRain extends VerticalFireball {
 	constructor(pos) {
 		super(pos);
 		this.speed = new Vector(0, 3);
-		this.beginingPos = this.pos;
+		// this.beginingPos = this.pos;
 	}
 	handleObstacle() {
-		this.pos = this.beginingPos;
+		this.pos = new Vector(this.pos.x, 0);
 	}
 }
 
@@ -288,7 +293,7 @@ const schemas = [
   [
     '         ',
     '         ',
-    'x    =  x',
+    '    =    ',
     '       o ',
     '     !xxx',
     ' @       ',
