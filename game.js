@@ -102,18 +102,13 @@ class Level {
 		let right = Math.ceil(movingObj.right);
 		let top = Math.floor(movingObj.top); 
 		let bottom = Math.ceil(movingObj.bottom);
-		// console.log(left, right, top, bottom, ' это коорд')
 		if(left < 0 || right > this.width || top < 0) {
 			return 'wall';
 		} else if(bottom > this.height) {
 			return 'lava';
 		}
 		 for(let y = top; y < bottom; y++) {
-		 	// console.log(y, ' у');
-
 			for(let x = left; x < right; x++) {
-				// console.log(x, ' это х');
-				// console.log(this.grid[y][x], ' это зис грид')
 				if(this.grid[y][x]) {
 					return this.grid[y][x];
 				}
@@ -142,9 +137,6 @@ class Level {
 		}
 	}
 }
-
-// const x = new Level([[,,,,,,,], ['x', ,,], [,,,,,], [,,], [], [], []]);
-// console.log(x.obstacleAt(new Vector(0.7, 0.7), new Vector(0.7, 0.7)));
 
 class LevelParser {
 	constructor(dictionary) {
@@ -215,7 +207,11 @@ class Fireball extends Actor {
 	act(time, level) {
 		const nextPos = this.getNextPosition(time);
 		const obstacle = level.obstacleAt(nextPos, this.size);
-		obstacle? this.handleObstacle() : this.pos = nextPos;
+		if(obstacle) {
+			this.handleObstacle();
+		} else {
+			this.pos = nextPos;
+		}
 	}
 }
 
@@ -238,10 +234,10 @@ class FireRain extends VerticalFireball {
 	constructor(pos) {
 		super(pos);
 		this.speed = new Vector(0, 3);
-		// this.beginingPos = this.pos;
+		this.beginingPos = this.pos;
 	}
 	handleObstacle() {
-		this.pos = new Vector(this.pos.x, 0);
+		this.pos = this.beginingPos;
 	}
 }
 
@@ -270,7 +266,7 @@ class Coin extends Actor {
 	}
 	getNextPosition(time) {
 		this.updateSpring(time);
-		this.pos = this.fixPos.plus(this.getSpringVector());
+		this.pos = this.pos.plus(this.getSpringVector());
 		return this.pos;
 	}
 	act(time) {
@@ -289,38 +285,31 @@ class Player extends Actor {
 	}
 }
 
-const schemas = [
-  [
-    '         ',
-    '         ',
-    '    =    ',
-    '       o ',
-    '     !xxx',
-    ' @       ',
-    'xxx!     ',
-    '         '
-  ],
-  [
-    '      v  ',
-    '    v    ',
-    '  v      ',
-    '        o',
-    '        x',
-    '@   x    ',
-    'x        ',
-    '         '
-  ]
-];
-const actorDict = {
-  '@': Player,
-  'v': FireRain,
-  'o': Coin,
-'=': HorizontalFireball,
-'|': VerticalFireball,
-};
-const parser = new LevelParser(actorDict);
-runGame(schemas, parser, DOMDisplay)
-  .then(() => console.log('Вы выиграли приз!'));
+const x = new Coin(new Vector(0.5, 0.5));
+console.log(x.pos)
+x.act(2);
+console.log(x.getNextPosition(2))
+console.log(x.pos)
+
+// const actorsDict = {
+// 	'x': new Vector(),
+// 	'!': new Vector(),
+// 	'@': new Actor(),
+// 	'o': new Actor(),
+// 	'=': new Actor(),
+// 	'|': new Actor(),
+// 	'v': new Actor()
+// };
+
+// const parser = new LevelParser(actorsDict);
+
+// loadLevels().then(levels => {
+//   return runGame(JSON.parse(levels), parser, DOMDisplay)
+//   	.then(result => alert('Вы выиграли!'));
+//   });
+		
+
+
 
 
 
