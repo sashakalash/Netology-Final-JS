@@ -207,11 +207,7 @@ class Fireball extends Actor {
 	act(time, level) {
 		const nextPos = this.getNextPosition(time);
 		const obstacle = level.obstacleAt(nextPos, this.size);
-		if(obstacle) {
-			this.handleObstacle();
-		} else {
-			this.pos = nextPos;
-		}
+		obstacle? this.handleObstacle() : this.pos = nextPos;
 	}
 }
 
@@ -234,10 +230,10 @@ class FireRain extends VerticalFireball {
 	constructor(pos) {
 		super(pos);
 		this.speed = new Vector(0, 3);
-		this.beginingPos = this.pos;
+		// this.beginingPos = this.pos;
 	}
 	handleObstacle() {
-		this.pos = this.beginingPos;
+		this.pos = new Vector(this.pos.x, 0);
 	}
 }
 
@@ -266,7 +262,7 @@ class Coin extends Actor {
 	}
 	getNextPosition(time) {
 		this.updateSpring(time);
-		this.pos = this.pos.plus(this.getSpringVector());
+		this.pos = this.fixPos.plus(this.getSpringVector());
 		return this.pos;
 	}
 	act(time) {
@@ -285,29 +281,22 @@ class Player extends Actor {
 	}
 }
 
-const x = new Coin(new Vector(0.5, 0.5));
-console.log(x.pos)
-x.act(2);
-console.log(x.getNextPosition(2))
-console.log(x.pos)
 
-// const actorsDict = {
-// 	'x': new Vector(),
-// 	'!': new Vector(),
-// 	'@': new Actor(),
-// 	'o': new Actor(),
-// 	'=': new Actor(),
-// 	'|': new Actor(),
-// 	'v': new Actor()
-// };
+const actorDict = {
+  '@': Player,
+  'v': FireRain,
+  'x': 'wall',
+  '!': 'lava',
+  'o': Coin,
+  '=': HorizontalFireball,
+  '|': VerticalFireball,
+  'v': FireRain
+}
+const parser = new LevelParser(actorDict);
 
-// const parser = new LevelParser(actorsDict);
-
-// loadLevels().then(levels => {
-//   return runGame(JSON.parse(levels), parser, DOMDisplay)
-//   	.then(result => alert('Вы выиграли!'));
-//   });
-		
+loadLevels().then(levels => {
+  return runGame(JSON.parse(levels), parser, DOMDisplay)
+}).then(result => alert('Вы выиграли!'));
 
 
 
