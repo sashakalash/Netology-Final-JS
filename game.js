@@ -130,7 +130,7 @@ class Level {
 }
 
 class LevelParser {
-	constructor(dictionary) {
+	constructor(dictionary = {}) {
 		const actorsDict = dictionary;
 		this.dictionary = actorsDict;
 	}
@@ -223,11 +223,11 @@ class FireRain extends Fireball {
 }
 
 class Coin extends Actor {
-	constructor(pos) {
+	constructor(pos = new Vector()) {
 		const size = new Vector(0.6, 0.6);
 		const getPos = new Vector(pos.x + 0.2, pos.y + 0.1);
 		super(getPos, size);
-		this.fixPos = pos;
+		this.fixPos = this.pos;
 		this.springSpeed = 8;
 		this.springDist = 0.07;
 		this.spring = Math.round((Math.random() * 2 * Math.PI) * 100) / 100;
