@@ -113,16 +113,17 @@ class Level {
 		return !(this.actors.some(el => el.type === typeObj));
 	}
 	playerTouched(typeObj, actor) {
-		if(this.status === null) {
-			if(typeObj === 'lava' || typeObj === 'fireball') {
-				this.status = 'lost';
-				return;
-			}	
-			if(typeObj === 'coin' && actor.type === 'coin') {
-				this.removeActor(actor);
-				if(this.noMoreActors(typeObj)) {
-					this.status = 'won';
-				}
+		if(this.status !== null) {
+			return;
+		}
+		if(typeObj === 'lava' || typeObj === 'fireball') {
+			this.status = 'lost';
+			return;
+		} 	
+		if(typeObj === 'coin' && actor.type === 'coin') {
+			this.removeActor(actor);
+			if(this.noMoreActors(typeObj)) {
+				this.status = 'won';
 			}
 		}
 	}
@@ -134,9 +135,7 @@ class LevelParser {
 		this.dictionary = actorsDict;
 	}
 	actorFromSymbol(symb) {
-		if(symb !== undefined) {
-			return this.dictionary[symb];
-		}
+		return this.dictionary[symb];
 	}
 	obstacleFromSymbol(symb) {
 		if(symb === 'x') {
@@ -161,7 +160,7 @@ class LevelParser {
 					if(movObj instanceof Actor) { //проверяем, что это экземпляр Actor
 						 finalArr.push(movObj);
 					} 
-				}
+				} 
 			}
 		}	
 		return finalArr;	
@@ -222,9 +221,6 @@ class FireRain extends Fireball {
 		this.pos = this.beginingPos;
 	}
 }
-
-
-
 
 class Coin extends Actor {
 	constructor(pos) {
