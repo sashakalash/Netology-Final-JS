@@ -54,62 +54,43 @@ class Actor {
 		if(movingObj === this) {
 			return false;
 		}
-		return movingObj.left < this.right &&
-    // форматирование: пробелов бы добавить, чтобы было понятно, что это к return относится
-		movingObj.right > this.left &&
-		movingObj.top < this.bottom &&
-		movingObj.bottom > this.top;
+		return movingObj.left < this.right && 
+			movingObj.right > this.left && 
+			movingObj.top < this.bottom &&
+			movingObj.bottom > this.top;
 	}
 }
 
 
 class Level {
 	constructor (grid = [], actors = []) {
-	  // здесь лучше создать копии массивов, чтобы нельзя было изменить поле объекта извне
-		this.grid = grid;
-		this.actors = actors;
+		const gridSet = grid;
+		const actorsArr = actors;
+		this.grid = gridSet;
+		this.actors = actorsArr;
 		this.status = null;
 		this.finishDelay = 1;
-	}
-	get player() {
-	  // можно в конструкторе задать
-		return this.actors.find(el => el.type === 'player');
-	}
-	get height() { 
-    // можно в конструкторе задать
-		return this.grid.length;
-	}
-	get width() {
-    // можно в одну строчку написать с помощью Math.max и .map (не критично)
-		return this.grid.reduce(function(memo, el) {
-			if (el.length > memo) {
-				memo = el.length;
-			}
-			return memo;
-		}, 0);
+		this.player = this.actors.find(el => el.type === 'player');
+		this.height = this.grid.length;
+		this.width = Math.max(0,...this.grid.map(el => el.length));
 	}
 	isFinished() {
 		return this.status !== null && this.finishDelay < 0;
 	}
 	actorAt(actor) {
-	  // проверка на undefined лишняя
-		if(actor === undefined || !(actor instanceof Actor)) {
+		if(!(actor instanceof Actor)) {
 			throw new Error('Можно использовать только ненулевой объект класса Actor');
 		}
-		// сравнение с true лишнее
-		return this.actors.find(el => el.isIntersect(actor) === true);
+		return this.actors.find(el => el.isIntersect(actor));
 	}
 	obstacleAt(toPos, size) {
 		if(!(toPos instanceof Vector && size instanceof Vector)) {
 			throw new Error ('Можно использовать только объект класса Vector');
 		}
-    // по хорошему тут можно обойтись без создания объекта, это немного путает
-		let movingObj = new Actor(toPos, size);
-		// let -> const
-		let left = Math.floor(movingObj.left);
-		let right = Math.ceil(movingObj.right);
-		let top = Math.floor(movingObj.top); 
-		let bottom = Math.ceil(movingObj.bottom);
+		const left = Math.floor(toPos.x);
+		const right = Math.ceil(toPos.x + size.x);
+		const top = Math.floor(toPos.y); 
+		const bottom = Math.ceil(toPos.y + size.y);
 		if(left < 0 || right > this.width || top < 0) {
 			return 'wall';
 		} else if(bottom > this.height) {
@@ -117,32 +98,26 @@ class Level {
 		}
 		 for(let y = top; y < bottom; y++) {
 			for(let x = left; x < right; x++) {
-			  // лучше в переменную
-				if(this.grid[y][x]) {
-					return this.grid[y][x];
+				let isObstacle = this.grid[y][x];
+				if(isObstacle) {
+					return isObstacle;
 				}
 			}
-		}
-		// лишняя строчка
-		return undefined;
+		}	
 	}
 	removeActor(actor) {
 		this.actors = this.actors.filter(el => el !== actor);
 
 	}
-	// форматирование (пробел перед фигурной скобкой)
-	noMoreActors(typeObj){
-	  // здесь лучше использовать some
-		return this.actors.find(el => el.type === typeObj) === undefined;
+	noMoreActors(typeObj) {
+		return !(this.actors.some(el => el.type === typeObj));
 	}
-	// не уверен, что значение по-умолчанию для actor
-	playerTouched(typeObj, actor = new Actor()) {
-	  // можно обратить if и уменьшить вложенность
+	playerTouched(typeObj, actor) {
 		if(this.status === null) {
 			if(typeObj === 'lava' || typeObj === 'fireball') {
 				this.status = 'lost';
-				// тут можно написать return
-			}
+				return;
+			}	
 			if(typeObj === 'coin' && actor.type === 'coin') {
 				this.removeActor(actor);
 				if(this.noMoreActors(typeObj)) {
@@ -155,58 +130,42 @@ class Level {
 
 class LevelParser {
 	constructor(dictionary) {
-    // лучше создать копию объекта
-		this.dictionary = dictionary;
+		const actorsDict = dictionary;
+		this.dictionary = actorsDict;
 	}
 	actorFromSymbol(symb) {
-	  // лишняя проверка
 		if(symb !== undefined) {
 			return this.dictionary[symb];
 		}
 	}
 	obstacleFromSymbol(symb) {
-		switch(symb) {
-			case 'x':
-				return 'wall';
-      case '!':
-				return 'lava';
-      // default не нужен
-			default:
-			break;
+		if(symb === 'x') {
+			return 'wall';
+		} else if (symb === '!') {
+			return 'lava';
 		}
 	}
 	createGrid(stringsArr) {
-	  // тут можно обойтись двумя map вместо 3
-    // строку в массив можно преобразовывать с помощью split
-		let newStringsArr = stringsArr.map(el => Array.from(el));
-		return newStringsArr.map(el =>
-			el.map(newEl =>
+		return stringsArr.map(el => el.split('').map(newEl => 
 				this.obstacleFromSymbol(newEl)));
 	}
 	createActors(stringsArr) {
 		let finalArr = [];
-		// лишняя проверка, в конструкторе задаётся в любом случае
-		if(this.dictionary === undefined) {
-			return finalArr;
-		}
 		for (let y = 0; y < stringsArr.length; y++) {
 			for (let x = 0; x < stringsArr[y].length; x++) {
-				let symb = stringsArr[y][x]; //c помощью полученных координат получаем символ
+				let symb = stringsArr[y][x]; //c помощью полученных координат получаем символ 
 				let vector = new Vector(x, y); //используем координаты для создания вектора
-        // в данном случае в actor будет класс или undefined, а по названию переменной похоже, что там объект
-				let actor = this.actorFromSymbol(symb);	//получаем данные из словаря по символу
-        // проверка на undefined лишняя
-				if(actor !== undefined && typeof actor === 'function') { // если функция для данного символа в словаре существуют
-					let movObj = new actor(vector); //получаем с помощью констурктора объект
+				let objClass = this.actorFromSymbol(symb);	//получаем данные из словаря по символу
+				if(typeof objClass === 'function') { // если функция для данного символа в словаре существуют 
+					let movObj = new objClass(vector); //получаем с помощью констурктора объект
 					if(movObj instanceof Actor) { //проверяем, что это экземпляр Actor
 						 finalArr.push(movObj);
-					}
+					} 
 				}
 			}
-		}
-		return finalArr;
+		}	
+		return finalArr;	
 	}
-
 	parse(stringsArr) {
 		return new Level(this.createGrid(stringsArr), this.createActors(stringsArr));
 	}
@@ -230,8 +189,11 @@ class Fireball extends Actor {
 	act(time, level) {
 		const nextPos = this.getNextPosition(time);
 		const obstacle = level.obstacleAt(nextPos, this.size);
-		// старайтесь избегать тренарных операций сравнения (тут лучше просто if)
-		obstacle? this.handleObstacle() : this.pos = nextPos;
+		if(obstacle) {
+			this.handleObstacle(); 
+		} else {
+			this.pos = nextPos;
+		}
 	}
 }
 
@@ -243,24 +205,21 @@ class HorizontalFireball extends Fireball {
 }
 
 
-class VerticalFireball extends HorizontalFireball {
+class VerticalFireball extends Fireball {
 	constructor(pos) {
-		super(pos);
-		// скорость должна задаваться через базовый конструктор
-		this.speed = new Vector(0, 2);
+		const speed = new Vector(0, 2);
+		super(pos, speed);
 	}
 }
 
-class FireRain extends VerticalFireball {
+class FireRain extends Fireball {
 	constructor(pos) {
-		super(pos);
-    // скорость должна задаваться через базовый конструктор
-		this.speed = new Vector(0, 3);
-		// this.beginingPos = this.pos;
+		const speed = new Vector(0, 3);
+		super(pos, speed);
+		this.beginingPos = this.pos;
 	}
 	handleObstacle() {
-	  // ошибка, см. описание
-		this.pos = new Vector(this.pos.x, 0);
+		this.pos = this.beginingPos;
 	}
 }
 
@@ -270,10 +229,9 @@ class FireRain extends VerticalFireball {
 class Coin extends Actor {
 	constructor(pos) {
 		const size = new Vector(0.6, 0.6);
-		super(pos, size);
-		this.fixPos = this.pos;
-		// должно задаваться через базовый конструктор
-		this.pos = this.pos.plus(new Vector(0.2, 0.1));
+		const getPos = new Vector(pos.x + 0.2, pos.y + 0.1);
+		super(getPos, size);
+		this.fixPos = pos;
 		this.springSpeed = 8;
 		this.springDist = 0.07;
 		this.spring = Math.round((Math.random() * 2 * Math.PI) * 100) / 100;
@@ -313,15 +271,10 @@ class Player extends Actor {
 const actorDict = {
   '@': Player,
   'v': FireRain,
-  // это лишнее тут
-  'x': 'wall',
-  '!': 'lava',
   'o': Coin,
   '=': HorizontalFireball,
   '|': VerticalFireball,
-  // второй раз
-  'v': FireRain
-}
+};
 const parser = new LevelParser(actorDict);
 
 loadLevels().then(levels => {
