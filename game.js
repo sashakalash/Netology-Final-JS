@@ -64,7 +64,7 @@ class Actor {
 
 class Level {
 	constructor (grid = [], actors = []) {
-		const gridSet = grid;
+		const gridSet = grid.slice();
 		const actorsArr = actors;
 		this.grid = gridSet;
 		this.actors = actorsArr;
@@ -98,9 +98,9 @@ class Level {
 		}
 		 for(let y = top; y < bottom; y++) {
 			for(let x = left; x < right; x++) {
-				let isObstacle = this.grid[y][x];
-				if(isObstacle) {
-					return isObstacle;
+				const obstacle = this.grid[y][x];
+				if(obstacle) {
+					return obstacle;
 				}
 			}
 		}	
@@ -149,7 +149,7 @@ class LevelParser {
 				this.obstacleFromSymbol(newEl)));
 	}
 	createActors(stringsArr) {
-		let finalArr = [];
+		const finalArr = [];
 		for (let y = 0; y < stringsArr.length; y++) {
 			for (let x = 0; x < stringsArr[y].length; x++) {
 				let symb = stringsArr[y][x]; //c помощью полученных координат получаем символ 
@@ -172,7 +172,7 @@ class LevelParser {
 
 
 class Fireball extends Actor {
-	constructor(pos, speed) {
+	constructor(pos = new Vector(0, 0), speed = new Vector(1, 1)) {
 		const size = new Vector(1, 1);
 		super(pos, size, speed);
 	}
@@ -180,7 +180,7 @@ class Fireball extends Actor {
 		return 'fireball';
 	}
 	getNextPosition(time = 1) {
-		return new Vector(this.speed.x * time + this.pos.x, this.speed.y * time + this.pos.y);
+		return this.speed.times(time).plus(this.pos);
 	}
 	handleObstacle() {
 		this.speed = this.speed.times(-1);
@@ -197,7 +197,7 @@ class Fireball extends Actor {
 }
 
 class HorizontalFireball extends Fireball {
-	constructor(pos) {
+	constructor(pos = new Vector(0, 0)) {
 		const speed = new Vector(2, 0);
 		super(pos, speed);
 	}
@@ -205,14 +205,14 @@ class HorizontalFireball extends Fireball {
 
 
 class VerticalFireball extends Fireball {
-	constructor(pos) {
+	constructor(pos = new Vector(0, 0)) {
 		const speed = new Vector(0, 2);
 		super(pos, speed);
 	}
 }
 
 class FireRain extends Fireball {
-	constructor(pos) {
+	constructor(pos = new Vector(0, 0)) {
 		const speed = new Vector(0, 3);
 		super(pos, speed);
 		this.beginingPos = this.pos;
@@ -223,7 +223,7 @@ class FireRain extends Fireball {
 }
 
 class Coin extends Actor {
-	constructor(pos = new Vector()) {
+	constructor(pos = new Vector(0, 0)) {
 		const size = new Vector(0.6, 0.6);
 		const getPos = new Vector(pos.x + 0.2, pos.y + 0.1);
 		super(getPos, size);
@@ -239,7 +239,7 @@ class Coin extends Actor {
 		this.spring += this.springSpeed * time;
 	}
 	getSpringVector() {
-		let y = Math.sin(this.spring) * this.springDist;
+		const y = Math.sin(this.spring) * this.springDist;
 		return new Vector(0, y);
 	}
 	getNextPosition(time) {
@@ -253,10 +253,10 @@ class Coin extends Actor {
 }
 
 class Player extends Actor {
-	constructor(pos) {
-		super(pos);
-		this.pos = this.pos.plus(new Vector(0, -0.5));
-		this.size = new Vector(0.8, 1.5);
+	constructor(pos = new Vector(0, 0)) {
+		const currPos = pos.plus(new Vector(0, -0.5));
+		const size = new Vector(0.8, 1.5);
+		super(currPos, size);
 	}
 	get type() {
 		return 'player';
