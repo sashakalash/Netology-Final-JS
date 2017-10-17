@@ -10,7 +10,7 @@ class Vector {
 		}
 		return new Vector(this.x + vector.x, this.y + vector.y);
 	}
-	times(factor) {
+	times(factor = 1) {
 		return new Vector (this.x * factor, this.y * factor);
 	}
 }
@@ -64,10 +64,8 @@ class Actor {
 
 class Level {
 	constructor (grid = [], actors = []) {
-		const gridSet = grid.slice();
-		const actorsArr = actors;
-		this.grid = gridSet;
-		this.actors = actorsArr;
+		this.grid = grid.slice();
+		this.actors = actors.slice();
 		this.status = null;
 		this.finishDelay = 1;
 		this.player = this.actors.find(el => el.type === 'player');
@@ -93,7 +91,8 @@ class Level {
 		const bottom = Math.ceil(toPos.y + size.y);
 		if(left < 0 || right > this.width || top < 0) {
 			return 'wall';
-		} else if(bottom > this.height) {
+		} 
+		if(bottom > this.height) {
 			return 'lava';
 		}
 		 for(let y = top; y < bottom; y++) {
@@ -110,7 +109,7 @@ class Level {
 
 	}
 	noMoreActors(typeObj) {
-		return !(this.actors.some(el => el.type === typeObj));
+		return !this.actors.some(el => el.type === typeObj);
 	}
 	playerTouched(typeObj, actor) {
 		if(this.status !== null) {
@@ -131,8 +130,7 @@ class Level {
 
 class LevelParser {
 	constructor(dictionary = {}) {
-		const actorsDict = dictionary;
-		this.dictionary = actorsDict;
+		this.dictionary = Object.assign({}, dictionary);
 	}
 	actorFromSymbol(symb) {
 		return this.dictionary[symb];
@@ -152,11 +150,11 @@ class LevelParser {
 		const finalArr = [];
 		for (let y = 0; y < stringsArr.length; y++) {
 			for (let x = 0; x < stringsArr[y].length; x++) {
-				let symb = stringsArr[y][x]; //c помощью полученных координат получаем символ 
-				let vector = new Vector(x, y); //используем координаты для создания вектора
-				let objClass = this.actorFromSymbol(symb);	//получаем данные из словаря по символу
+				const symb = stringsArr[y][x]; //c помощью полученных координат получаем символ 
+				const objClass = this.actorFromSymbol(symb);	//получаем данные из словаря по символу
 				if(typeof objClass === 'function') { // если функция для данного символа в словаре существуют 
-					let movObj = new objClass(vector); //получаем с помощью констурктора объект
+					const vector = new Vector(x, y); //используем координаты для создания вектора
+					const movObj = new objClass(vector); //получаем с помощью констурктора объект
 					if(movObj instanceof Actor) { //проверяем, что это экземпляр Actor
 						 finalArr.push(movObj);
 					} 
